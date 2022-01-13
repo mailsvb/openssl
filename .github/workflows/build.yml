@@ -30,10 +30,8 @@ jobs:
         PKCS12_PASS: ${{ secrets.PKCS12_PASS }}
       run: |
         echo $PKCS12_FILE | base64 --decode > PKCS12.pfx
-        sudo osslsigncode sign -pkcs12 PKCS12.pfx -pass $PKCS12_PASS -h sha256 -n "OpenSSL" -i https://github.com/mailsvb/openssl/ -t http://timestamp.digicert.com -in openssl.exe -out openssl_signed.exe
-        sudo rm openssl.exe
-        sudo mv openssl_signed.exe openssl.exe
-      working-directory: /usr/src/bin
+        osslsigncode sign -pkcs12 PKCS12.pfx -pass $PKCS12_PASS -h sha256 -n "OpenSSL" -i https://github.com/mailsvb/openssl/ -t http://timestamp.digicert.com -in /usr/src/bin/openssl.exe -out /tmp/openssl.exe
+      working-directory: /tmp
     - name: Create GitHub release
       id: create-new-release
       uses: actions/create-release@v1
@@ -48,6 +46,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-new-release.outputs.upload_url }}
-        asset_path: /usr/src/bin/openssl.exe
+        asset_path: /tmp/openssl.exe
         asset_name: openssl.exe
         asset_content_type: application/vnd.microsoft.portable-executable
