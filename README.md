@@ -1,2 +1,2 @@
 # openssl
-OpenSSL binary files for Windows
+OpenSSL binary file for Windows
