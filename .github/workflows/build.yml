@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Install build tools
-      run: sudo apt-get install build-essential gcc-mingw-w64 binutils-mingw-w64 mingw-w64 curl pkg-config
+      run: sudo apt-get install build-essential gcc-mingw-w64 binutils-mingw-w64 mingw-w64 curl pkg-config osslsigncode
     - name: Download openssl ${{ env.OPENSSL_VERSION }}
       run: mkdir openssl && curl -L -s https://github.com/openssl/openssl/archive/refs/tags/openssl-$OPENSSL_VERSION.tar.gz | tar xvfz - -C openssl --strip-components=1
       working-directory: /tmp
@@ -24,6 +24,16 @@ jobs:
         ./Configure mingw64 -static no-asm --prefix=/usr/src --cross-compile-prefix=x86_64-w64-mingw32-
         make clean && make && sudo make install
       working-directory: /tmp/openssl
+    - name: Sign openssl file
+      env:
+        PKCS12_FILE: ${{ secrets.PKCS12_FILE }}
+        PKCS12_PASS: ${{ secrets.PKCS12_PASS }}
+      run: |
+        echo $PKCS12_FILE | base64 --decode > PKCS12.pfx
+        sudo osslsigncode sign -pkcs12 PKCS12.pfx -pass $PKCS12_PASS -h sha256 -n "OpenSSL" -i https://github.com/mailsvb/openssl/ -t http://timestamp.digicert.com -in openssl.exe -out openssl_signed.exe
+        sudo rm openssl.exe
+        sudo mv openssl_signed.exe openssl.exe
+      working-directory: /usr/src/bin
     - name: Create GitHub release
       id: create-new-release
       uses: actions/create-release@v1
