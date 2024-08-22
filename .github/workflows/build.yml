@@ -11,7 +11,7 @@ jobs:
     name: Build openssl
     runs-on: ubuntu-latest
     env:
-      OPENSSL_VERSION: 3.0.13
+      OPENSSL_VERSION: 3.0.14
 
     steps:
     - name: Install build tools
